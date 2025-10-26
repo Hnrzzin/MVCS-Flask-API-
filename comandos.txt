@@ -150,3 +150,7 @@ python_api/
 3- fazer as validações de negócio
 4- cria um objeto (model) com os dados enviados
 5- envia pro crud desejado
+
+===
+
+Service lança exceções, Controller formata sucessos. Erros são capturados pelo middleware!

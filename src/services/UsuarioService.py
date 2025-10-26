@@ -58,7 +58,7 @@ class UsuarioService:
         return self.daoUserDependency.create(usuario)
 
     
-    def update(self, usuarioBodyRequest: dict, idUsuario: int) -> bool:
+    def updateUser(self, usuarioBodyRequest: dict, idUsuario: int) -> bool:
        
         
         # Busca usuário existente
@@ -124,7 +124,7 @@ class UsuarioService:
         return sucesso
     
     
-    def delete(self, idUsuario: int) -> bool:
+    def deleteUser(self, idUsuario: int) -> bool:
         
         # Verifica se existe
         usuario = self.daoUserDependency.findById(idUsuario)
