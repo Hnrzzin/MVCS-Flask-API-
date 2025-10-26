@@ -1,0 +1,152 @@
+
+## **2. ROTAS DA API**
+```
+POST   /api/v1/users/register   - Criar usuário (público)
+POST   /api/v1/users/login      - Login (público)
+
+GET    /api/v1/users            - Listar usuários (protegido)
+GET    /api/v1/users/:id        - Buscar por ID (protegido)
+PUT    /api/v1/users/:id        - Atualizar (protegido)
+DELETE /api/v1/users/:id        - Deletar (protegido)
+```
+
+---
+
+## **3. FLUXO DO PROGRAMA (Request → Response)**
+```
+┌─────────────┐
+│   Cliente   │
+│ (Insomnia)  │
+└──────┬──────┘
+       │ 1. HTTP Request (JSON)
+       ↓
+┌─────────────────────────────────────────────┐
+│              index.js (Server)              │
+│  - Inicializa Express                       │
+│  - Conecta MongoDB                          │
+│  - Registra middlewares globais             │
+│  - Configura injeção de dependências        │
+└──────┬──────────────────────────────────────┘
+       │ 2. Roteamento
+       ↓
+┌─────────────────────────────────────────────┐
+│         Routes (userRoutes.js)              │
+│  - Define rotas (GET, POST, PUT, DELETE)    │
+│  - Associa middlewares às rotas             │
+└──────┬──────────────────────────────────────┘
+       │ 3. Validação
+       ↓
+┌─────────────────────────────────────────────┐
+│    Middlewares (validação/autenticação)     │
+│  - validationMiddleware: Valida dados       │
+│  - authMiddleware: Verifica JWT             │
+└──────┬──────────────────────────────────────┘
+       │ 4. Orquestração
+       ↓
+┌─────────────────────────────────────────────┐
+│      Controller (UserController.js)         │
+│  - Recebe requisição                        │
+│  - Chama Service adequado                   │
+│  - Formata resposta JSON                    │
+└──────┬──────────────────────────────────────┘
+       │ 5. Lógica de Negócio
+       ↓
+┌─────────────────────────────────────────────┐
+│        Service (UserService.js)             │
+│  - Valida email único                       │
+│  - Hash de senha (bcrypt)                   │
+│  - Gera JWT                                 │
+│  - Aplica regras de negócio                 │
+└──────┬──────────────────────────────────────┘
+       │ 6. Persistência
+       ↓
+┌─────────────────────────────────────────────┐
+│          DAO (UserDAO.js)                   │
+│  - Abstrai acesso ao MongoDB                │
+│  - CRUD: create, findByEmail, findAll, etc  │
+└──────┬──────────────────────────────────────┘
+       │ 7. Banco de Dados
+       ↓
+┌─────────────────────────────────────────────┐
+│     Model (User.js) + MongoDB Atlas         │
+│  - Schema Mongoose                          │
+│  - Validações de domínio                    │
+│  - Armazena dados                           │
+└──────┬──────────────────────────────────────┘
+       │ 8. Resposta
+       ↓
+┌─────────────────────────────────────────────┐
+│    ErrorMiddleware (tratamento de erros)    │
+│  - Captura erros                            │
+│  - Formata resposta padronizada             │
+│  - Retorna status HTTP correto              │
+└──────┬──────────────────────────────────────┘
+       │ 9. HTTP Response (JSON)
+       ↓
+┌─────────────┐
+│   Cliente   │
+│  (Resposta) │
+└─────────────┘
+```
+
+
+### **Passo 2: Estrutura de Pastas**
+```
+python_api/
+├── src/
+│   ├── config/
+│   │   └── database.py              # 1º - DatabaseConfig (pool MySQL)
+│   │
+│   ├── models/
+│   │   ├── Cantor.py                # 2º - Model Cantor
+│   │   ├── Gravadora.py             # 3º - Model Gravadora
+│   │   └── FeatFamoso.py            # 4º - Model FeatFamoso
+│   │
+│   ├── dao/
+│   │   ├── CantorDAO.py             # 5º - DAO Cantor (CRUD completo)
+│   │   ├── GravadoraDAO.py          # 6º - DAO Gravadora (CRUD completo)
+│   │   └── FeatFamosoDAO.py         # 7º - DAO FeatFamoso (CRUD completo)
+│   │
+│   ├── exceptions/
+│   │   └── ErrorResponse.py         # 8º - Exceção customizada (httpCode, message, error)
+│   │
+│   ├── utils/
+│   │   └── jwt_helper.py            # 9º - Funções JWT (gerar/validar tokens)
+│   │
+│   ├── services/
+│   │   ├── CantorService.py         # 10º - Lógica de negócio Cantor
+│   │   ├── GravadoraService.py      # 11º - Lógica de negócio Gravadora
+│   │   ├── FeatFamosoService.py     # 12º - Lógica de negócio FeatFamoso
+│   │   └── AuthService.py           # 13º - Serviço de autenticação/login
+│   │
+│   ├── controllers/
+│   │   ├── CantorController.py      # 14º - Endpoints REST Cantor
+│   │   ├── GravadoraController.py   # 15º - Endpoints REST Gravadora
+│   │   ├── FeatFamosoController.py  # 16º - Endpoints REST FeatFamoso
+│   │   └── AuthController.py        # 17º - Endpoints de login/registro
+│   │
+│   ├── middlewares/
+│   │   ├── auth_middleware.py       # 18º - Validação JWT em rotas protegidas
+│   │   ├── validation_middleware.py # 19º - Validação de dados de entrada
+│   │   └── error_middleware.py      # 20º - Handler de ErrorResponse
+│   │
+│   └── routes/
+│       ├── cantor_routes.py         # 21º - Rotas /cantores
+│       ├── gravadora_routes.py      # 22º - Rotas /gravadoras
+│       ├── featfamoso_routes.py     # 23º - Rotas /feats
+│       └── auth_routes.py           # 24º - Rotas /auth (login/register)
+│
+├── .env                             # 25º - Variáveis de ambiente (DB, JWT_SECRET)
+├── .gitignore                       # 26º - Ignorar venv, .env, __pycache__
+├── requirements.txt                 # 27º - Dependências (flask, mysql-connector-python, pyjwt)
+├── app.py                           # 28º - Inicialização do Flask (ÚLTIMO ARQUIVO)
+└── README.md                        # Documentação do projeto
+
+
+
+
+1- verificr se o usurio existe
+2- fazer as validações relacionadas às regras de dominio
+3- fazer as validações de negócio
+4- cria um objeto (model) com os dados enviados
+5- envia pro crud desejado
