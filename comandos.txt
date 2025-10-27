@@ -126,9 +126,14 @@ python_api/
 │   │   └── AuthController.py        # 17º - Endpoints de login/registro
 │   │
 │   ├── middlewares/
-│   │   ├── auth_middleware.py       # 18º - Validação JWT em rotas protegidas
-│   │   ├── validation_middleware.py # 19º - Validação de dados de entrada
-│   │   └── error_middleware.py      # 20º - Handler de ErrorResponse
+│   │   
+│   ├
+│   ├── usuario_validation.py    # ← Um para cada entidade
+│   ├── cantor_validation.py     # banco
+│   ├── gravadora_validation.py  # banco
+│   ├── feat_validation.py       # banco
+│   │   └── error_middleware.py  # 20º - Handler de ErrorResponse
+│   │   
 │   │
 │   └── routes/
 │       ├── cantor_routes.py         # 21º - Rotas /cantores
@@ -154,3 +159,7 @@ python_api/
 ===
 
 Service lança exceções, Controller formata sucessos. Erros são capturados pelo middleware!
+
+===
+
+Handler = "manipulador" ou "tratador". No Flask, são funções que capturam e tratam eventos específicos (erros, requisições).
