@@ -18,14 +18,6 @@ import os
 from src.config.database import DatabaseConfig
 
 # ============================================
-# IMPORTAÇÕES - MODELS
-# ============================================
-from src.models.Usuario import Usuario
-from src.models.Cantor import Cantor
-from src.models.Gravadora import Gravadora
-from src.models.FeatFamoso import FeatFamoso
-
-# ============================================
 # IMPORTAÇÕES - DAOs
 # ============================================
 from src.dao.UsuarioDAO import UsuarioDAO
@@ -102,84 +94,44 @@ print("✅ Configuração de banco de dados criada")
 # ============================================
 # INJEÇÃO DE DEPENDÊNCIAS - USUARIO
 # ============================================
-# Camada DAO
 usuario_dao = UsuarioDAO(database_config)
-
-# Camada Service
 usuario_service = UsuarioService(usuario_dao)
-
-# Camada Controller
 usuario_controller = UsuarioController(usuario_service)
-
-# Middleware
 usuario_middleware = UserMiddleware()
-
-# Router
 auth_router = AuthRouter(usuario_middleware, usuario_controller)
-
 print("✅ Módulo de Usuário configurado")
 
 
 # ============================================
 # INJEÇÃO DE DEPENDÊNCIAS - CANTOR
 # ============================================
-# Camada DAO
 cantor_dao = CantorDAO(database_config)
-
-# Camada Service
 cantor_service = CantorService(cantor_dao)
-
-# Camada Controller
 cantor_controller = CantorController(cantor_service)
-
-# Middleware
 cantor_middleware = CantorMiddleware()
-
-# Router
 cantor_router = CantorRouter(cantor_middleware, cantor_controller)
-
 print("✅ Módulo de Cantor configurado")
 
 
 # ============================================
 # INJEÇÃO DE DEPENDÊNCIAS - GRAVADORA
 # ============================================
-# Camada DAO
 gravadora_dao = GravadoraDAO(database_config)
-
-# Camada Service
 gravadora_service = GravadoraService(gravadora_dao)
-
-# Camada Controller
 gravadora_controller = GravadoraController(gravadora_service)
-
-# Middleware
 gravadora_middleware = GravadoraMiddleware()
-
-# Router
 gravadora_router = GravadoraRouter(gravadora_middleware, gravadora_controller)
-
 print("✅ Módulo de Gravadora configurado")
 
 
 # ============================================
 # INJEÇÃO DE DEPENDÊNCIAS - FEATFAMOSO
 # ============================================
-# Camada DAO
 feat_dao = FeatFamosoDAO(database_config)
-
-# Camada Service
 feat_service = FeatFamosoService(feat_dao)
-
-# Camada Controller
 feat_controller = FeatFamosoController(feat_service)
-
-# Middleware
 feat_middleware = FeatFamosoMiddleware()
-
-# Router
 feat_router = FeatFamosoRouter(feat_middleware, feat_controller)
-
 print("✅ Módulo de FeatFamoso configurado")
 
 
@@ -193,34 +145,35 @@ print("✅ Middleware de erros registrado")
 # ============================================
 # REGISTRO DE BLUEPRINTS (ROTAS)
 # ============================================
+print("🔧 Registrando blueprints...")
+
 # Rotas de Autenticação e Usuários
-print ("PArou aquui!!!")
 app.register_blueprint(
-        auth_router.createRoutes(),
-        url_prefix='/api/auth'
-    )
-    
+    auth_router.createRoutes(),
+    url_prefix='/api/auth'
+)
+print("  ✅ Rotas de Auth registradas")
 
-    # Rotas de Cantores
+# Rotas de Cantores
 app.register_blueprint(
-        cantor_router.createRoutes(),
-        url_prefix='/api'
-    )
-    
+    cantor_router.createRoutes(),
+    url_prefix='/api'
+)
+print("  ✅ Rotas de Cantor registradas")
 
-    # Rotas de Gravadoras
+# Rotas de Gravadoras
 app.register_blueprint(
-        gravadora_router.createRoutes(),
-        url_prefix='/api'
-    )
-    
+    gravadora_router.createRoutes(),
+    url_prefix='/api'
+)
+print("  ✅ Rotas de Gravadora registradas")
 
-    # Rotas de Feats
+# Rotas de Feats
 app.register_blueprint(
-        feat_router.createRoutes(),
-        url_prefix='/api'
-    )
-    
+    feat_router.createRoutes(),
+    url_prefix='/api'
+)
+print("  ✅ Rotas de Feat registradas")
 
 
 # ============================================
@@ -285,6 +238,7 @@ def api_docs():
         "endpoints": {
             "auth": {
                 "POST /api/auth/register": "Cadastrar novo usuário",
+                "POST /api/auth/login": "Fazer login",
                 "GET /api/auth/users": "Listar usuários (protegido)",
                 "GET /api/auth/users/<id>": "Buscar usuário (protegido)",
                 "PUT /api/auth/users/<id>": "Atualizar usuário (protegido)",
@@ -311,24 +265,6 @@ def api_docs():
                 "PUT /api/feats/<id>": "Atualizar feat (protegido)",
                 "DELETE /api/feats/<id>": "Deletar feat (protegido)"
             }
-        },
-        "example_request": {
-            "register": {
-                "method": "POST",
-                "url": "/api/auth/register",
-                "body": {
-                    "nome": "Drake",
-                    "email": "drake@email.com",
-                    "senha": "senha123"
-                }
-            },
-            "protected_route": {
-                "method": "GET",
-                "url": "/api/cantores",
-                "headers": {
-                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                }
-            }
         }
     }), 200
 
@@ -340,15 +276,13 @@ if __name__ == '__main__':
     print("\n" + "="*60)
     print("🚀 INICIANDO SERVIDOR FLASK")
     print("="*60)
-    print(f"📍 URL: http://127.0.0.1:5000")
-    print(f"📍 Documentação: http://127.0.0.1:5000/api/docs")
-    print(f"📍 Health Check: http://127.0.0.1:5000/health")
+    print(f"🌐 URL: http://127.0.0.1:5000")
+    print(f"📚 Documentação: http://127.0.0.1:5000/api/docs")
+    print(f"💊 Health Check: http://127.0.0.1:5000/health")
     print("="*60 + "\n")
     
-    # Modo de desenvolvimento (debug=True)
-    # Em produção, use debug=False
     app.run(
-        host='0.0.0.0',  # Aceita conexões de qualquer IP
-        port=5000,       # Porta padrão
-        debug=True       # Modo debug (auto-reload e mensagens detalhadas)
+        host='0.0.0.0',
+        port=5000,
+        debug=True
     )

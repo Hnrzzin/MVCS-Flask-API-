@@ -4,7 +4,6 @@ from src.middlewares.GravadoraMiddleware import GravadoraMiddleware
 from src.controlles.GravadoraController import GravadoraController
 
 class GravadoraRouter:
-    """Router para todas as rotas de Gravadora"""
     
     def __init__(self, gravadoramiddleware: GravadoraMiddleware, gravadoracontroller: GravadoraController):
         self.gravadoramiddleware = gravadoramiddleware
@@ -13,55 +12,39 @@ class GravadoraRouter:
         print("⬆️ GravadoraRouter.constructor()")
         
     def createRoutes(self):
-        """
-        Configura todas as rotas REST de Gravadora
-        
-        Rotas:
-        - POST   /gravadoras          -> Cria nova gravadora
-        - GET    /gravadoras          -> Lista todas gravadoras
-        - GET    /gravadoras/<id>     -> Busca gravadora por ID
-        - PUT    /gravadoras/<id>     -> Atualiza gravadora
-        - DELETE /gravadoras/<id>     -> Remove gravadora
-        """
-        
-        # CREATE - Criar nova gravadora
-        @self.blueprint.route('/gravadoras', methods=['POST'])
+        # CREATE
+        @self.blueprint.route('/gravadoras', methods=['POST'], endpoint='create_gravadora')
         @token_required
         @self.gravadoramiddleware.validateBody
         def store():
             return self.gravadoracontroller.store()
         
-        
-        # READ ALL - Listar todas gravadoras
-        @self.blueprint.route('/gravadoras', methods=['GET'])
+        # READ ALL
+        @self.blueprint.route('/gravadoras', methods=['GET'], endpoint='list_gravadoras')
         @token_required
         def index():
             return self.gravadoracontroller.index()
         
-        
-        # READ ONE - Buscar gravadora por ID
-        @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['GET'])
+        # READ ONE
+        @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['GET'], endpoint='show_gravadora')
         @token_required
         @self.gravadoramiddleware.validateIdParam
         def show(idGravadora):
-            return self.gravadoracontroller.show()
+            return self.gravadoracontroller.show(idGravadora)  # ✅ Passa o ID
         
-        
-        # UPDATE - Atualizar gravadora
-        @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['PUT'])
+        # UPDATE
+        @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['PUT'], endpoint='update_gravadora')
         @token_required
         @self.gravadoramiddleware.validateIdParam
         @self.gravadoramiddleware.validateBody
         def update(idGravadora):
-            return self.gravadoracontroller.update()
+            return self.gravadoracontroller.update(idGravadora)  # ✅ Passa o ID
         
-        
-        # DELETE - Remover gravadora
-        @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['DELETE'])
+        # DELETE
+        @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['DELETE'], endpoint='delete_gravadora')
         @token_required
         @self.gravadoramiddleware.validateIdParam
         def destroy(idGravadora):
-            return self.gravadoracontroller.destroy()
-        
+            return self.gravadoracontroller.destroy(idGravadora)  # ✅ Passa o ID
         
         return self.blueprint

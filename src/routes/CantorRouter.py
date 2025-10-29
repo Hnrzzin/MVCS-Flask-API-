@@ -1,6 +1,4 @@
-from flask import Blueprint, request
-# Agrupa rotas relacionadas (todas de Cantor ficam juntas)
-# Por que Blueprint? Separa rotas de Cantores, Usuário, Gravadora, etc. Cada entidade tem seu próprio "módulo" de rotas.
+from flask import Blueprint
 from src.utils.jwtHelper import token_required
 from src.middlewares.CantorMiddleware import CantorMiddleware
 from src.controlles.CantorController import CantorController
@@ -10,60 +8,43 @@ class CantorRouter:
     def __init__(self, cantormiddleware: CantorMiddleware, cantorcontroller: CantorController):
         self.cantormiddleware = cantormiddleware
         self.cantorcontroller = cantorcontroller
-        # Blueprint é a coleção de rotas da entidade User
         self.blueprint = Blueprint('Cantor', __name__)
-        print ("⬆️ RouterCantor.contructor()")
+        print("⬆️ RouterCantor.contructor()")
         
     def createRoutes(self):
-        """
-        Configura e retorna todas as rotas REST da entidade do Usuario.
-
-        Rotas implementadas:
-        - POST /        -> Cria um novo cargo
-        - GET /         -> Lista todos os cargos
-        - GET /<id>     -> Retorna um cargo por ID
-        - PUT /<id>     -> Atualiza um cargo por ID
-        - DELETE /<id>  -> Remove um cargo por ID
-
-        Observações:
-        - Middlewares de validação são aplicados diretamente.
-        """
-        
-        @self.blueprint.route('/cantores', methods = ['POST'])
+        # CREATE
+        @self.blueprint.route('/cantores', methods=['POST'], endpoint='create_cantor')
         @token_required
-        
         @self.cantormiddleware.validateBody
-        
         def store():
             return self.cantorcontroller.store()
         
-    
-        @self.blueprint.route('/cantores', methods = ['GET'])
-        
+        # READ ALL
+        @self.blueprint.route('/cantores', methods=['GET'], endpoint='list_cantores')
+        @token_required
         def index():
             return self.cantorcontroller.index()
         
-        @self.blueprint.route('/cantores/<int:idCantor>', methods = ['GET'])
+        # READ ONE
+        @self.blueprint.route('/cantores/<int:idCantor>', methods=['GET'], endpoint='show_cantor')
         @token_required
         @self.cantormiddleware.validateIdParam
-        
         def show(idCantor):
-            return self.cantorcontroller.show()
+            return self.cantorcontroller.show(idCantor)  # ✅ Passa o ID
         
-        @self.blueprint.route('/cantores/<int:idCantor>', methods = ['PUT'])
+        # UPDATE
+        @self.blueprint.route('/cantores/<int:idCantor>', methods=['PUT'], endpoint='update_cantor')
         @token_required
         @self.cantormiddleware.validateBody
         @self.cantormiddleware.validateIdParam
-        
         def update(idCantor):
-            return self.cantorcontroller.update()
+            return self.cantorcontroller.update(idCantor)  # ✅ Passa o ID
         
-        @self.blueprint.route('/disconnect/<int:idCantor>', methods = ['DELETE'])
+        # DELETE
+        @self.blueprint.route('/cantores/<int:idCantor>', methods=['DELETE'], endpoint='delete_cantor')
         @token_required
         @self.cantormiddleware.validateIdParam
-        
         def destroy(idCantor):
-            return self.cantorcontroller.destroy()
+            return self.cantorcontroller.destroy(idCantor)  # ✅ Passa o ID
         
-        # Retorna o Blueprint configurado para registro na aplicação Flask
         return self.blueprint
