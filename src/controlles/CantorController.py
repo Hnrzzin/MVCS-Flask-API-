@@ -35,7 +35,7 @@ class CantorController:
         
         print("🔵 CantorController.index()")
         
-        allCantores = self.__cantor_service.findAllCantores()
+        allCantores = self.__cantor_service.findAll()
         
         return jsonify({
             "success": True,
@@ -47,14 +47,12 @@ class CantorController:
     
     
     # READ ONE - Busca cantor por ID
-    def show(self):
+    def show(self, idCantor):
         
         print("🔵 CantorController.show()")
         
-        idCantor = request.view_args.get("idCantor")
-        
         # Service lança ErrorResponse 404 se não encontrar
-        cantor = self.__cantor_service.findCantorById(int(idCantor))
+        cantor = self.__cantor_service.findById(int(idCantor))
         
         return jsonify({
             "success": True,
@@ -66,12 +64,12 @@ class CantorController:
     
     
     # UPDATE - Atualiza cantor existente
-    def update(self):
+    def update(self, idCantor):
         """Atualiza um cantor existente"""
         print("🔵 CantorController.update()")
         
         # Pega ID da URL
-        idCantor = request.view_args.get("idCantor")
+        
         
         # Pega dados do body
         cantorBodyRequest = request.json
@@ -91,11 +89,11 @@ class CantorController:
     
     
     # DELETE - Remove cantor
-    def destroy(self):
+    def destroy(self, idCantor):
         """Remove um cantor pelo ID"""
         print("🔵 CantorController.destroy()")
         
-        idCantor = request.view_args.get("idCantor")
+        
         
         # Service valida e deleta
         self.__cantor_service.deleteCantor(int(idCantor))

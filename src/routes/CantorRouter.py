@@ -1,7 +1,7 @@
 from flask import Blueprint
 from src.utils.jwtHelper import token_required
 from src.middlewares.CantorMiddleware import CantorMiddleware
-from src.controlles.CantorController import CantorController
+from src.controlles.CantorController import CantorController  # ✅ CORRIGIDO
 
 class CantorRouter:
     
@@ -9,13 +9,13 @@ class CantorRouter:
         self.cantormiddleware = cantormiddleware
         self.cantorcontroller = cantorcontroller
         self.blueprint = Blueprint('Cantor', __name__)
-        print("⬆️ RouterCantor.contructor()")
+        print("⬆️ RouterCantor.constructor()")
         
     def createRoutes(self):
         # CREATE
         @self.blueprint.route('/cantores', methods=['POST'], endpoint='create_cantor')
         @token_required
-        @self.cantormiddleware.validateBody
+        @self.cantormiddleware.validar_body_create  # ✅ CORRIGIDO
         def store():
             return self.cantorcontroller.store()
         
@@ -28,23 +28,23 @@ class CantorRouter:
         # READ ONE
         @self.blueprint.route('/cantores/<int:idCantor>', methods=['GET'], endpoint='show_cantor')
         @token_required
-        @self.cantormiddleware.validateIdParam
+        @self.cantormiddleware.validar_id_cantor  # ✅ CORRIGIDO
         def show(idCantor):
-            return self.cantorcontroller.show(idCantor)  # ✅ Passa o ID
+            return self.cantorcontroller.show(idCantor)
         
         # UPDATE
         @self.blueprint.route('/cantores/<int:idCantor>', methods=['PUT'], endpoint='update_cantor')
         @token_required
-        @self.cantormiddleware.validateBody
-        @self.cantormiddleware.validateIdParam
+        @self.cantormiddleware.validar_id_cantor  # ✅ CORRIGIDO
+        @self.cantormiddleware.validar_body_update  # ✅ CORRIGIDO
         def update(idCantor):
-            return self.cantorcontroller.update(idCantor)  # ✅ Passa o ID
+            return self.cantorcontroller.update(idCantor)
         
         # DELETE
         @self.blueprint.route('/cantores/<int:idCantor>', methods=['DELETE'], endpoint='delete_cantor')
         @token_required
-        @self.cantormiddleware.validateIdParam
+        @self.cantormiddleware.validar_id_cantor  # ✅ CORRIGIDO
         def destroy(idCantor):
-            return self.cantorcontroller.destroy(idCantor)  # ✅ Passa o ID
+            return self.cantorcontroller.destroy(idCantor)
         
         return self.blueprint

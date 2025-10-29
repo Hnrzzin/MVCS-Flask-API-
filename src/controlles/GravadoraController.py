@@ -35,7 +35,7 @@ class GravadoraController:
         """Lista todas as gravadoras"""
         print("🔵 GravadoraController.index()")
         
-        allGravadoras = self.__gravadora_service.findAllGravadoras()
+        allGravadoras = self.__gravadora_service.findAll()
         
         return jsonify({
             "success": True,
@@ -47,14 +47,14 @@ class GravadoraController:
     
     
     # READ ONE - Busca gravadora por ID
-    def show(self):
+    def show(self, idGravadora):
         """Busca gravadora por ID"""
         print("🔵 GravadoraController.show()")
         
-        idGravadora = request.view_args.get("idGravadora")
+        
         
         # Service lança ErrorResponse 404 se não encontrar
-        gravadora = self.__gravadora_service.findGravadoraById(int(idGravadora))
+        gravadora = self.__gravadora_service.findById(int(idGravadora))
         
         return jsonify({
             "success": True,
@@ -66,12 +66,11 @@ class GravadoraController:
     
     
     # UPDATE - Atualiza gravadora existente
-    def update(self):
+    def update(self, idGravadora):
         """Atualiza uma gravadora existente"""
         print("🔵 GravadoraController.update()")
         
         # Pega ID da URL
-        idGravadora = request.view_args.get("idGravadora")
         
         # Pega dados do body
         gravadoraBodyRequest = request.json
@@ -91,11 +90,10 @@ class GravadoraController:
     
     
     # DELETE - Remove gravadora
-    def destroy(self):
+    def destroy(self, idGravadora):
         """Remove uma gravadora pelo ID"""
         print("🔵 GravadoraController.destroy()")
         
-        idGravadora = request.view_args.get("idGravadora")
         
         # Service valida e deleta
         self.__gravadora_service.deleteGravadora(int(idGravadora))

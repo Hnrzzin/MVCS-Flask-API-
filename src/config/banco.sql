@@ -106,10 +106,6 @@ VALUES ('Joji', 'Japonês', '32', 'Masculino', 8, 11);
 INSERT INTO Cantor (nomeCantor, nacionalidade, idade, sexo, Gravadora_idGravadora, FeatFamoso_idFeat) 
 VALUES ('Yunk Vino', 'Brasileiro', '27', 'Masculino', 9, 12);
 
--- Usuario de teste (senha: "admin123" hasheada)
-INSERT INTO Usuario (nome, email, senha_hash) 
-VALUES ('Admin', 'admin@teste.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU7A8mP5O.GW');
-
 -- Configuração de autenticação
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Henry45*1';
 FLUSH PRIVILEGES;

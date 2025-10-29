@@ -1,7 +1,7 @@
 from src.services.UsuarioService import UsuarioService
 from flask import jsonify, request
 from src.utils.ErrorResponse import ErrorResponse
-from src.utils.jwtHelper import gerar_token
+from src.utils.jwtHelper import gerar_token, token_required
 
 class UsuarioController:
     def __init__(self, userService: UsuarioService):
@@ -19,10 +19,7 @@ class UsuarioController:
         
         # Service valida e cria
         novo_id = self.userService.createUser(userBodyRequest)
-        novo_token = gerar_token(
-                                userBodyRequest.get('email'),
-                                userBodyRequest.get('senha')
-                            )
+    
         
         return jsonify({
             "success": True,
@@ -30,12 +27,11 @@ class UsuarioController:
             "data": {
                 "idUsuario": novo_id,
                 "nome": userBodyRequest.get("nome"),
-                "email": userBodyRequest.get("email"),
-                "token": f'{novo_token}'
+                "email": userBodyRequest.get("email")
+            
             }
         }), 201
-    
-    
+        
     # READ ALL - Lista todos os usuários
     def index(self):
         
@@ -53,12 +49,12 @@ class UsuarioController:
         }), 200  
     
     
-    # READ ONE - Busca usuário por ID
-    def show(self):
+        # READ ONE - Busca usuário por ID
+    def show(self, idUsuario):  # ✅ Já recebe o parâmetro
         
         print("🔵 UsuarioController.show()")
         
-        idUsuario = request.view_args.get("idUsuario")
+        # O Flask já passa como argumento
         
         # Service lança ErrorResponse 404 se não encontrar
         usuario = self.userService.findById(int(idUsuario))
@@ -73,20 +69,13 @@ class UsuarioController:
     
     
     # UPDATE - Atualiza usuário existente
-    def update(self):
+    def update(self, idUsuario):
         
         print("🔵 UsuarioController.update()")
         
-        # Pega ID da URL
-        idUsuario = request.view_args.get("idUsuario")
-        
-        # Pega dados do body
         userBodyRequest = request.json
-        
-        # Service valida e atualiza (lança ErrorResponse se falhar)
         self.userService.updateUser(userBodyRequest, int(idUsuario))
-        
-        # Retorna sucesso (não precisa buscar novamente)
+    
         return jsonify({
             "success": True,
             "message": "Usuário atualizado com sucesso",
@@ -94,24 +83,48 @@ class UsuarioController:
                 "idUsuario": int(idUsuario),
                 "nome": userBodyRequest.get("nome"),
                 "email": userBodyRequest.get("email")
-                
             }
         }), 200
     
     
     # DELETE - Remove usuário
-    def destroy(self):
+    def destroy(self, idUsuario):
         
         print("🔵 UsuarioController.destroy()")
         
-        # Pega ID da URL
-        idUsuario = request.view_args.get("idUsuario")
-        
         # Service valida e deleta (lança ErrorResponse se não existir)
-        self.userService.deleteUser(int(idUsuario))
+        sucesso = self.userService.deleteUser(int(idUsuario))
+        if sucesso == True:
+            # Retorna sucesso
+            return jsonify({
+                "success": True,
+                "message": "Usuário excluído com sucesso"
+            }), 200  # ou 204 No Content (sem body)
         
-        # Retorna sucesso
+    def login(self):
+        """LOGIN - Autentica usuário e retorna token"""
+        
+        print("🔵 UsuarioController.login()")
+        
+        userBodyRequest = request.json
+        email = userBodyRequest.get('email')
+        senha = userBodyRequest.get('senha')
+        
+        # Valida presença de campos
+        if not email or not senha:
+            raise ErrorResponse(400, "Email e senha são obrigatórios")
+        
+        # Service autentica
+        usuario = self.userService.authenticateUser(email, senha)
+        
+        # Gera token
+        token = gerar_token(usuario['idUsuario'], usuario['email'])
+        
         return jsonify({
             "success": True,
-            "message": "Usuário excluído com sucesso"
-        }), 200  # ou 204 No Content (sem body)
+            "message": "Login realizado com sucesso",
+            "data": {
+                "usuario": usuario,
+                "token": token
+            }
+        }), 200

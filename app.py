@@ -36,16 +36,16 @@ from src.services.FeatFamosoService import FeatFamosoService
 # ============================================
 # IMPORTAÇÕES - CONTROLLERS
 # ============================================
-from src.controlles.UsuarioController import UsuarioController
-from src.controlles.CantorController import CantorController
-from src.controlles.GravadoraController import GravadoraController
-from src.controlles.FeatFamosoController import FeatFamosoController
+from src.controlles.UsuarioController import UsuarioController  # ✅ CORRIGIDO
+from src.controlles.CantorController import CantorController      # ✅ CORRIGIDO
+from src.controlles.GravadoraController import GravadoraController  # ✅ CORRIGIDO
+from src.controlles.FeatFamosoController import FeatFamosoController  # ✅ CORRIGIDO
 
 # ============================================
 # IMPORTAÇÕES - MIDDLEWARES
 # ============================================
 from src.middlewares.ErrorMiddleware import ErrorMiddleware
-from src.middlewares.UsuarioMiddleware import UserMiddleware
+from src.middlewares.UsuarioMiddleware import UsuarioMiddleware  # ✅ CORRIGIDO
 from src.middlewares.CantorMiddleware import CantorMiddleware
 from src.middlewares.GravadoraMiddleware import GravadoraMiddleware
 from src.middlewares.FeatFamosoMiddleware import FeatFamosoMiddleware
@@ -80,7 +80,7 @@ print("✅ Aplicação Flask inicializada")
 # ============================================
 database_config = DatabaseConfig(
     pool_name="api_pool",
-    pool_size=10,
+    pool_size=25,
     pool_reset_session=True,
     host=os.getenv('DB_HOST', '127.0.0.1'),
     user=os.getenv('DB_USER', 'root'),
@@ -97,7 +97,7 @@ print("✅ Configuração de banco de dados criada")
 usuario_dao = UsuarioDAO(database_config)
 usuario_service = UsuarioService(usuario_dao)
 usuario_controller = UsuarioController(usuario_service)
-usuario_middleware = UserMiddleware()
+usuario_middleware = UsuarioMiddleware()  # ✅ CORRIGIDO
 auth_router = AuthRouter(usuario_middleware, usuario_controller)
 print("✅ Módulo de Usuário configurado")
 
@@ -201,12 +201,14 @@ def home():
 @app.route('/health')
 def health_check():
     """Verifica se a API e o banco estão funcionando"""
+    conn = None
+    cursor = None
     try:
-        # Testa conexão com o banco
-        with database_config.get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT 1")
-                cursor.fetchone()
+        # Pega conexão do pool
+        conn = database_config.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
         
         return jsonify({
             "success": True,
@@ -222,6 +224,13 @@ def health_check():
             "database": "disconnected",
             "error": str(e)
         }), 500
+    
+    finally:
+        # Fecha cursor e devolve conexão ao pool
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 # ============================================
@@ -237,7 +246,7 @@ def api_docs():
         "authentication": "JWT Bearer Token",
         "endpoints": {
             "auth": {
-                "POST /api/auth/register": "Cadastrar novo usuário",
+                "POST /api/auth/cadastro": "Cadastrar novo usuário",
                 "POST /api/auth/login": "Fazer login",
                 "GET /api/auth/users": "Listar usuários (protegido)",
                 "GET /api/auth/users/<id>": "Buscar usuário (protegido)",

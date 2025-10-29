@@ -36,7 +36,7 @@ class FeatFamosoController:
         """Lista todos os feats famosos"""
         print("🔵 FeatFamosoController.index()")
         
-        allFeats = self.__feat_service.findAllFeats()
+        allFeats = self.__feat_service.findAll()
         
         return jsonify({
             "success": True,
@@ -48,14 +48,14 @@ class FeatFamosoController:
     
     
     # READ ONE - Busca feat por ID
-    def show(self):
+    def show(self, idFeat):
         """Busca feat por ID"""
         print("🔵 FeatFamosoController.show()")
         
-        idFeat = request.view_args.get("idFeat")
+        
         
         # Service lança ErrorResponse 404 se não encontrar
-        feat = self.__feat_service.findFeatById(int(idFeat))
+        feat = self.__feat_service.findById(int(idFeat))
         
         return jsonify({
             "success": True,
@@ -67,12 +67,12 @@ class FeatFamosoController:
     
     
     # UPDATE - Atualiza feat existente
-    def update(self):
+    def update(self, idFeat):
         """Atualiza um feat existente"""
         print("🔵 FeatFamosoController.update()")
         
         # Pega ID da URL
-        idFeat = request.view_args.get("idFeat")
+        
         
         # Pega dados do body
         featBodyRequest = request.json
@@ -93,11 +93,10 @@ class FeatFamosoController:
     
     
     # DELETE - Remove feat
-    def destroy(self):
+    def destroy(self, idFeat):
         """Remove um feat pelo ID"""
         print("🔵 FeatFamosoController.destroy()")
         
-        idFeat = request.view_args.get("idFeat")
         
         # Service valida e deleta
         self.__feat_service.deleteFeat(int(idFeat))

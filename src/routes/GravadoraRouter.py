@@ -1,7 +1,7 @@
 from flask import Blueprint
 from src.utils.jwtHelper import token_required
 from src.middlewares.GravadoraMiddleware import GravadoraMiddleware
-from src.controlles.GravadoraController import GravadoraController
+from src.controlles.GravadoraController import GravadoraController  # ✅ CORRIGIDO
 
 class GravadoraRouter:
     
@@ -15,7 +15,7 @@ class GravadoraRouter:
         # CREATE
         @self.blueprint.route('/gravadoras', methods=['POST'], endpoint='create_gravadora')
         @token_required
-        @self.gravadoramiddleware.validateBody
+        @self.gravadoramiddleware.validar_body_create  # ✅ CORRIGIDO
         def store():
             return self.gravadoracontroller.store()
         
@@ -28,23 +28,23 @@ class GravadoraRouter:
         # READ ONE
         @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['GET'], endpoint='show_gravadora')
         @token_required
-        @self.gravadoramiddleware.validateIdParam
+        @self.gravadoramiddleware.validar_id_gravadora  # ✅ CORRIGIDO
         def show(idGravadora):
-            return self.gravadoracontroller.show(idGravadora)  # ✅ Passa o ID
+            return self.gravadoracontroller.show(idGravadora)
         
         # UPDATE
         @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['PUT'], endpoint='update_gravadora')
         @token_required
-        @self.gravadoramiddleware.validateIdParam
-        @self.gravadoramiddleware.validateBody
+        @self.gravadoramiddleware.validar_id_gravadora  # ✅ CORRIGIDO
+        @self.gravadoramiddleware.validar_body_update  # ✅ CORRIGIDO
         def update(idGravadora):
-            return self.gravadoracontroller.update(idGravadora)  # ✅ Passa o ID
+            return self.gravadoracontroller.update(idGravadora)
         
         # DELETE
         @self.blueprint.route('/gravadoras/<int:idGravadora>', methods=['DELETE'], endpoint='delete_gravadora')
         @token_required
-        @self.gravadoramiddleware.validateIdParam
+        @self.gravadoramiddleware.validar_id_gravadora  # ✅ CORRIGIDO
         def destroy(idGravadora):
-            return self.gravadoracontroller.destroy(idGravadora)  # ✅ Passa o ID
+            return self.gravadoracontroller.destroy(idGravadora)
         
         return self.blueprint

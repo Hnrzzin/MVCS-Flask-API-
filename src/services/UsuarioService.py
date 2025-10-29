@@ -32,13 +32,12 @@ class UsuarioService:
                                 )
         
         # Verifica se email já existe
-        resultado = self.daoUserDependency.findByEmail(email) # vai retornar um dict ou None
-        if resultado == None: 
-            raise ErrorResponse(
-                400,
-                "Email já está em uso",
-                {"email": email}
-            )
+        usuario_existente = self.daoUserDependency.findByEmail(email)
+        if usuario_existente:  # Se existe, não pode cadastrar
+            raise ErrorResponse(400,
+                                "Email já está em uso",
+                                {"email": email}
+                                )
         
         # Hasheia a senha
         senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -56,7 +55,6 @@ class UsuarioService:
         
         print("✅ UsuarioService.createUser()")
         return self.daoUserDependency.create(usuario)
-
     
     def updateUser(self, usuarioBodyRequest: dict, idUsuario: int) -> bool:
        
@@ -67,7 +65,7 @@ class UsuarioService:
         if not usuario_existente:
             raise ErrorResponse(404,
                                 "Usuário não encontrado",
-                                {"id": idUsuario}
+                                {"idUsuario": idUsuario}
                                 )
         
         # Pega dados novos ou mantém antigos (atualização parcial)
@@ -109,7 +107,7 @@ class UsuarioService:
             nome=nome,
             email=email,
             senha=senha_hash,
-            id=idUsuario
+            idUsuario=idUsuario
         )
         
         # Atualiza no banco
@@ -131,8 +129,9 @@ class UsuarioService:
         if not usuario:
             raise ErrorResponse(404,
                                 "Usuário não encontrado",
-                                {"id": idUsuario}
+                                {"idUsuario": idUsuario}
                                 )
+                                
         
         sucesso = self.daoUserDependency.delete(idUsuario)
         
@@ -160,7 +159,7 @@ class UsuarioService:
         if not usuario:
             raise ErrorResponse(404,
                                 "Usuário não encontrado",
-                                {"id": idUsuario}
+                                {"idUsuario": idUsuario}
                                 )
         
         # Remove senha_hash (segurança)
@@ -169,3 +168,26 @@ class UsuarioService:
         print("✅ UsuarioService.findById()")
         return usuario # devolve dict completo sem senha_hash
     
+    def authenticateUser(self, email: str, senha: str) -> dict:
+        """Autentica usuário e retorna seus dados"""
+        
+        # Busca usuário por email
+        usuario = self.daoUserDependency.findByEmail(email)
+        
+        if not usuario:
+            raise ErrorResponse(401, "Email ou senha inválidos")
+        
+        # Verifica senha
+        senha_valida = bcrypt.checkpw(
+            senha.encode('utf-8'),
+            usuario['senha_hash'].encode('utf-8')
+        )
+        
+        if not senha_valida:
+            raise ErrorResponse(401, "Email ou senha inválidos")
+        
+        # Remove senha_hash antes de retornar
+        usuario.pop('senha_hash', None)
+        
+        print("✅ UsuarioService.authenticateUser()")
+        return usuario

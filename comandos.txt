@@ -198,3 +198,117 @@ black==23.12.1
 
 # Para linting
 pylint==3.0.3
+
+
+===
+
+1. Erro "PooledMySQLConnection does not support context manager"
+Causa: Você usava with database.get_connection() mas conexões de pool MySQL não suportam o protocolo with (context manager) nativamente.
+Solução: Trocamos para try/except/finally com conn.close() manual.
+2. Erro "Object of type method is not JSON serializable"
+Causa: No ErrorMiddleware, você tentava serializar error.httpCode (que é um método) em vez de chamar o método com error.httpCode().
+Solução: Adicionamos () para chamar o método.
+3. Erro "ErrorResponse object has no attribute 'message'"
+Causa: Conflito de nomes! Você tinha:
+pythonself.httpCode = httpCode  # Atributo
+def httpCode(self):       # Método com MESMO NOME
+Python sobrescrevia o atributo com o método, causando confusão.
+Solução: Renomeamos para self._httpCode (privado) e getHttpCode() (getter), separando atributos de métodos.
+4. Por que usamos getters?
+Para encapsular os dados e evitar conflitos de nomes entre atributos e métodos, seguindo boas práticas de POO.
+Resumo: Erros de design de código (nomes duplicados) + uso incorreto de context managers. Agora está correto! 🎉
+
+
+================
+
+
+Analisando seu código, encontrei vários problemas que impedem o ID de chegar corretamente nos métodos de update e delete:
+
+1. PROBLEMA NOS CONTROLLERS 
+CantorController, GravadoraController, FeatFamosoController:
+
+Os métodos show(), update() e destroy() NÃO recebem o parâmetro id como argumento
+Você está usando request.view_args.get("idCantor") mas deveria receber direto como parâmetro
+
+Onde corrigir:
+
+Linha onde define def show(self): → deve ser def show(self, idCantor):
+Linha onde define def update(self): → deve ser def update(self, idCantor):
+Linha onde define def destroy(self): → deve ser def destroy(self, idCantor):
+
+
+2. PROBLEMA NOS DAOs 
+CantorDAO, GravadoraDAO, FeatFamosoDAO:
+
+Método delete() recebe objeto Cantor/Gravadora/FeatFamoso mas deveria receber apenas int (o ID)
+Você usa self.__database mas o atributo se chama self.db_config
+Ainda está usando with statements que causam erro de context manager
+
+Onde corrigir:
+
+Linha def delete(self, cantor: Cantor) → deve ser def delete(self, idCantor: int)
+Linha self.__database.get_connection() → deve ser self.db_config.get_connection()
+Todas as linhas com with → trocar por try/except/finally
+
+
+3. PROBLEMA NOS SERVICES 
+CantorService:
+
+Linha onde chama self.daoCantorDependency.delete(idCantor) está correto
+MAS o DAO espera receber um objeto, não um ID (veja problema #2)
+Linha com self.daoCantorDependency.findByNome() → esse método NÃO EXISTE no DAO
+
+Onde corrigir:
+
+Remova a linha que chama findByNome() ou use findByField('nomeCantor', nomeCantor)
+
+
+4. PROBLEMA NOS MIDDLEWARES 
+Todos os middlewares (exceto UsuarioMiddleware):
+
+Linha @wraps está SEM PARÊNTESES → deve ser @wraps(f)
+Verificação if 'IdCantor' not in kwargs: → o nome está ERRADO, deve ser 'idCantor' (minúsculo)
+
+Onde corrigir:
+
+Linha @wraps → adicione (f): @wraps(f)
+Linha if 'IdCantor' not in kwargs: → mude para if 'idCantor' not in kwargs:
+
+
+5. PROBLEMA NOS MODELS ❌
+Cantor, Gravadora, FeatFamoso:
+
+Construtor tem parâmetros com nomes diferentes dos atributos
+Exemplo: __init__(self, ..., id=None) mas nos Services você passa idCantor=...
+
+Onde corrigir:
+
+Padronize: ou sempre id ou sempre idCantor/idGravadora/idFeat
+
+
+CHECKLIST DE CORREÇÕES:
+Controllers:
+
+ Adicionar parâmetro id nos métodos show(), update(), destroy()
+ Remover request.view_args.get()
+
+DAOs:
+
+ Mudar assinatura de delete() para receber int em vez de objeto
+ Corrigir self.__database para self.db_config
+ Remover todos os with statements
+ Adicionar try/except/finally em todos os métodos
+
+Services:
+
+ Remover chamada a findByNome() ou implementar usando findByField()
+
+Middlewares:
+
+ Adicionar (f) em @wraps
+ Corrigir 'IdCantor' para 'idCantor' (minúsculo)
+
+Models:
+
+ Padronizar nomes de parâmetros no construtor
+
