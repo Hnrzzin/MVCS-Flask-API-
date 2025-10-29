@@ -163,3 +163,38 @@ Service lança exceções, Controller formata sucessos. Erros são capturados pe
 ===
 
 Handler = "manipulador" ou "tratador". No Flask, são funções que capturam e tratam eventos específicos (erros, requisições).
+
+===
+fluxo a partir da rota
+Cliente → Rota (@blueprint.route)
+           ↓
+       JWT Middleware (valida token)
+           ↓
+       Cargo Middleware (valida dados)
+           ↓
+       Controller (formata resposta)
+           ↓
+       Service (regras de negócio)
+           ↓
+       DAO (banco de dados)
+           ↓
+       ← Resposta JSON
+
+
+===
+
+# ============================================
+# DESENVOLVIMENTO (OPCIONAL)
+# ============================================
+# Para testes
+pytest==7.4.3
+pytest-flask==1.3.0
+
+# Para debug e análise
+ipython==8.18.1
+
+# Para formatação de código
+black==23.12.1
+
+# Para linting
+pylint==3.0.3

@@ -21,3 +21,19 @@ class FeatFamosoMiddleware:
                 )
             return f(*args, **kwargs)
         return (decorated_function)
+    
+        
+    def validateIdParam(self, f):
+        # *args = argumentos posicionais (sem nome)
+        # **kwargs = argumentos nomeados (com nome)
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            print("🔷 FeatMiddleware.validate_id_param()")
+            if 'IdFeat' not in kwargs: #ps: é necessario que idUsuario tenha o mesmo nome que esta na rota
+                raise ErrorResponse(
+                    400, "Erro na validação de dados",
+                    {"message": "O parâmetro 'id' é obrigatório!"}
+                )
+            return f(*args, **kwargs)
+        return decorated_function
+    

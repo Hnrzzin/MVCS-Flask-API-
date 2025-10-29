@@ -1,11 +1,13 @@
 from src.services.UsuarioService import UsuarioService
 from flask import jsonify, request
 from src.utils.ErrorResponse import ErrorResponse
+from src.utils.jwtHelper import gerar_token
 
 class UsuarioController:
     def __init__(self, userService: UsuarioService):
         print("✅ UsuarioController initialized")
         self.userService = userService
+        
 
     
     # CREATE - Cria um novo usuário
@@ -17,6 +19,10 @@ class UsuarioController:
         
         # Service valida e cria
         novo_id = self.userService.createUser(userBodyRequest)
+        novo_token = gerar_token(
+                                userBodyRequest.get('email'),
+                                userBodyRequest.get('senha')
+                            )
         
         return jsonify({
             "success": True,
@@ -24,8 +30,8 @@ class UsuarioController:
             "data": {
                 "idUsuario": novo_id,
                 "nome": userBodyRequest.get("nome"),
-                "email": userBodyRequest.get("email")
-                
+                "email": userBodyRequest.get("email"),
+                "token": f'{novo_token}'
             }
         }), 201
     
